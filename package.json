@@ -1,0 +1,23 @@
+{
+  "name": "chuggcli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "searchWebpackLoaders.js",
+  "dependencies": {},
+  "devDependencies": {
+    "tape": "^4.4.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samhagan/chuggCLI.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samhagan/chuggCLI/issues"
+  },
+  "homepage": "https://github.com/samhagan/chuggCLI#readme"
+}
