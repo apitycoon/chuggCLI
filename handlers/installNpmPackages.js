@@ -43,7 +43,4 @@ function installPackages(arr) {
 
 }
 
-
-var test = ['sdfasdfsa', 'moment', 'jquery'];
-
-installPackages(test);
+module.exports = installPackages
