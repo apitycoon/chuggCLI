@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "searchWebpackLoaders.js",
-  "dependencies": {},
+  "dependencies": {
+    "cheerio": "^0.20.0",
+    "request-promise": "^2.0.1"
+  },
   "devDependencies": {
     "tape": "^4.4.0"
   },

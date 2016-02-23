@@ -6,7 +6,7 @@ const rp = require('request-promise');
 // the function returns a promise
 
 
-function webpackScraper(url) {
+function scrapeWebpack(url) {
 
   // test for bad url
 
@@ -43,4 +43,4 @@ function webpackScraper(url) {
 // webpackScraper('https://webpack.github.io/docs/list-of-loaders.html')
 //   .then(data => console.log(data));
 
-module.exports = webpackScraper;
+module.exports = scrapeWebpack;
