@@ -39,8 +39,8 @@ const data = [
   }
 ];
 
-test('search webpack loader results', (t) => {
-  t.plan(2);
+test('testing searchWebpackloader function', (t) => {
+  t.plan(3);
 
 
   // check multiple results
@@ -57,7 +57,8 @@ test('search webpack loader results', (t) => {
         url: 'n/a',
         desc: 'loads file as JSON'
       }
-    ]
+    ],
+    'testing for when there are multiple search results that match the keyword'
   );
 
   // check single results
@@ -69,7 +70,15 @@ test('search webpack loader results', (t) => {
         url: 'n/a',
         desc: 'Loads css file with resolved imports and returns css code'
       }
-    ]
-  )
+    ],
+    `expects a single result from the search`
+  );
+
+  // check for empty results
+  t.deepEqual(
+    searchWebpackLoaders('akljads;fjasdkf', data),
+    [],
+    `testing for an empty result`
+  );
 
 });
