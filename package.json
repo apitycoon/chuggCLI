@@ -4,6 +4,7 @@
   "description": "",
   "main": "searchWebpackLoaders.js",
   "dependencies": {
+    "bson": "^0.4.21",
     "cheerio": "^0.20.0",
     "request-promise": "^2.0.1"
   },
