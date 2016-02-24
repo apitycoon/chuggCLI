@@ -75,6 +75,9 @@ function inputOutput() {
         incorrectOutput(answer);
       }
       else {
+          if (answer[0] !== `.`) answer = `.${answer}`;
+          if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
+          
         configObj.output = answer;
         console.log(`You answered: ${answer}`);
         selectPreset();
@@ -89,6 +92,9 @@ function incorrectOutput(mistake) {
       if (answer.slice(-3) !== '.js') {
         incorrectOutput(answer);
       } else {
+          if (answer[0] !== `.`) answer = `.${answer}`;
+          if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
+        
         configObj.output = answer;
         console.log(`You answered: ${answer}`);
         selectPreset();
@@ -97,24 +103,66 @@ function incorrectOutput(mistake) {
 }
 
 function selectPreset() {
-  rl.question(`Would you like to use any of our presets? [r] React, [a] Angular or [n] none
+  rl.question(`Would you like to use any of our presets? Flag as many as you'd like
+[r] React JSX w/ ES2015 
+[e] ES2015 
+[b] Bootstrap
+-----------------------
+To add other loaders, please include [n]
 `, answer => {
-      if (answer !== 'r' && answer !== 'a' && answer !== 'n') {
-        invalidPreset(answer);
-      } else if (answer === 'r') {
-        configObj.presets = answer;
-        console.log(`You answered: React`);
-        closeReadline();
-      } else if (answer === 'a') {
-        configObj.presets = answer;
-        console.log(`You answered: Angular`);
-        closeReadline();
-      } else {
-        configObj.presets = answer;
-        useLoaders();
-      }
+    if (answer.search('r') > -1) {
+      loadReactPreset();
+    } else if (answer.search('e') > - 1) {
+      loadES2015Preset();
+    }
+    
+    if (answer.search('b') > -1) {
+      loadBoostrapPreset();
+    }
+    if (answer.search('n') > -1) {
+      return useLoaders();
+    }
+  closeReadline();
   });
 }
+
+function loadReactPreset() {
+  console.log(`React preset added.`);
+  installationArray = installationArray.concat(['babel-loader', 'babel-core', 'babel-preset-es2015', 'babel-preset-react']);
+  
+}
+
+function loadES2015Preset() {
+  console.log(`ES2015 preset added.`);
+  installationArray = installationArray.concat(['babel-loader', 'babel-core', 'babel-preset-es2015']);
+}
+  
+function loadBoostrapPreset() {
+  console.log(`Boostrap preset added.`)
+  installationArray = installationArray.concat(['file-loader', 'url-loader', 'bootstrap-webpack', 'expose-loader']);
+}
+  
+  
+  
+  
+  
+  
+//       if (answer !== 'r' && answer !== 'a' && answer !== 'n') {
+//         invalidPreset(answer);
+//       } else if (answer === 'r') {
+//         configObj.presets = answer;
+//         console.log(`You answered: React`);
+//         closeReadline();
+//       } else if (answer === 'a') {
+//         configObj.presets = answer;
+//         console.log(`You answered: Angular`);
+//         closeReadline();
+//       } else {
+//         configObj.presets = answer;
+//         useLoaders();
+//       }
+//   });
+// }
 
 function invalidPreset(mistake) {
   rl.question(`${mistake} is an invalid preset. Please select either [r] React, [a] Angular or [n] none
@@ -137,7 +185,7 @@ function invalidPreset(mistake) {
 }
 
 function useLoaders() {
-  rl.question(`Will you need to load any non-js files or convert jsx into JavaScript? y/n
+  rl.question(`Will you need to load any non-js files? y/n
 `, answer => {
       if (answer !== 'y' && answer !== 'n') {
         useLoaders();
@@ -175,7 +223,6 @@ function showSearchResults() {
     var resultsIndexes = Object.keys(results);
     currentLoader = results[resultsIndexes[answer]];
     currentLoaderName = currentLoader.url.slice(currentLoader.url.lastIndexOf('/') + 1);
-    console.log(currentLoader);
     scrapeGithub(currentLoader.url).then(data => {
       currentLoaderData = data;
       console.log(data.readme);
@@ -188,13 +235,8 @@ function askToInstall() {
   rl.question(`Would you like to install ${currentLoaderName}? y/n
 `, answer => {
       if (answer === 'y') {
-        if (currentLoaderData.npmInstall) {
           installationArray.push(currentLoaderName);
           inputTest();
-        } else {
-          console.log(`Installation not required`);
-          inputTest();
-        }
       } else if (answer === 'n') {
         showSearchResults();
       } else {
@@ -212,20 +254,22 @@ function inputTest() {
       } else {
         configObj.test = `.${answer}`;
       }
-      
+    console.log(`You answered: ${answer}`);      
     includeOrExclude();
   });
 }
 
 function includeOrExclude() {
-  rl.question(`Would you like to [i]nclude or [e]xclude and files or folders?
+  rl.question(`Would you like to [i]nclude or [e]xclude any files/folders or [n]ot?
 `, answer => {
       if (answer === 'i') {
         include();
       } else if (answer === 'e') {
         exclude();
+      } else if (answer === 'n') {
+        useLoaders();
       } else {
-        console.log(`You didn't choose i or e.`)
+        console.log(`You didn't choose i, e or n.`)
         includeOrExclude();
       }
   });
@@ -255,9 +299,6 @@ function exclude() {
 
 beginSearch();
 
-// scrapeWebpack('https://webpack.github.io/docs/list-of-loaders.html')
-// .then(data => {
-//   console.log(searchWebpackLoaders('css', data).map(result => result.desc));
-// });
+
 
 
