@@ -2,33 +2,29 @@ var cheerio = require('cheerio');
 var rp = require('request-promise');
 
 function scrapeGithub(url) {
-
-  rp(url)
+  url += '/raw/master/README.md'
+  const results = rp(url)
     .then(function(html) {
       var githubObj = {};
       var $ = cheerio.load(html);
-        if ($(".js-directory-link:contains('README.md')").attr('href')) {
-          rp(`${url}/raw/master/README.md`).then(function(readmeText) {
-            var npmInstallIndex = readmeText.search("npm install ");
+      var npmInstallIndex = html.search("npm install ");
+      
+      githubObj.npmInstall = null;
+      githubObj.readme = html;
 
-            githubObj.npmInstall = null;
-
-              if (npmInstallIndex > 0) {
-                var npmInstallLastIndex = readmeText.indexOf("`", npmInstallIndex + 1);
-                githubObj.npmInstall = readmeText.slice(npmInstallIndex + 1, npmInstallLastIndex).trim();
-              }
-
-            githubObj.readme = readmeText;
-
-            console.log(githubObj);
-          });
+        if (npmInstallIndex > 0) {
+          var npmInstallLastIndex = html.indexOf("`", npmInstallIndex + 1);
+          githubObj.npmInstall = html.slice(npmInstallIndex + 1, npmInstallLastIndex).trim();
         } else {
           githubObj.npmInstall = null;
-          githubObj.readme = null;
         }
+        
+      return githubObj;
     });
+    
+    return results;
 }
 
-// githubSearch('https://github.com/nelix/cowsay-loader')
+// scrapeGithub('https://github.com/nelix/cowsay-loader')
 
 module.exports = scrapeGithub;

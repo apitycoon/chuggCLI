@@ -5,10 +5,14 @@
   "main": "searchWebpackLoaders.js",
   "dependencies": {
     "cheerio": "^0.20.0",
+    "commander": "^2.9.0",
     "request-promise": "^2.0.1"
   },
   "devDependencies": {
     "tape": "^4.4.0"
+  },
+  "bin": {
+    "wpm": "./cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
