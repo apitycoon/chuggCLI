@@ -3,18 +3,26 @@ const fs = require('fs');
 // object constructor for loaders
 // loaders need at least two props -- (i) loader and (ii) file extension to test
 function Loader() {
-  this.loaders = [];
+  this.loader = '';
   this.test = '';
 }
 Loader.prototype.addLoader = function(value) {
-  //deal with both array and chained loaders
-  if (typeof value === 'string') {
-    value = value.split('!');
-  }
-
+  // deal with both array and chained loaders
+  // convert everything to chained
   if (Array.isArray(value)) {
-    value.forEach(loader => this.loaders.push(loader.toString().trim()));
-    return;
+    value.forEach(loader => {
+      if (this.loader) {
+        this.loader = `${this.loader}!${loader.toString().trim()}`;
+      } else {
+        this.loader = loader.toString().trim();
+      }
+    })
+  } else if (typeof value === 'string') {
+    if (this.loader) {
+      this.loader = `${this.loader}!${value.toString().trim()}`;
+    } else {
+      this.loader = value.toString().trim();
+    }
   }
 }
 Loader.prototype.addTest = function(value, merge) {
@@ -101,7 +109,7 @@ Config.prototype.addPlugin = function(value) {
 
 // method to write the file to webpack.config.js file
 Config.prototype.done = function(pathToFile) {
-  fs.writeFile(pathToFile + 'webpack.config2.js', 'module.exports = ' + objToString(this));
+  fs.writeFile(pathToFile + 'webpack.config.js', 'module.exports = ' + objToString(this));
 }
 
 // could wrap in closure to avoid the history variable in the
