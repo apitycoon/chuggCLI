@@ -36,7 +36,7 @@ Loader.prototype.addTest = function(value, merge) {
   }
 }
 Loader.prototype.addQuery = function(value) {
-  this.query = value;
+  if (value) this.query = value;
 }
 Loader.prototype.addInclude = function(value, merge) {
   if (merge && value) {
@@ -67,13 +67,12 @@ Loader.prototype.addExclude = function(value, merge) {
 // there the minimum parameters are filename and path
 function Output() {
   this.filename = '';
-  this.path = '';
 }
 Output.prototype.addFilename = function(value) {
   this.filename = value;
 }
 Output.prototype.addPath = function(value) {
-  this.path = value;
+  if (value) this.path = value;
 }
 Output.prototype.addPublicPath = function(value) {
   // public path should be text; test before adding
@@ -102,7 +101,7 @@ Config.prototype.addPlugin = function(value) {
 
 // method to write the file to webpack.config.js file
 Config.prototype.done = function(pathToFile) {
-  fs.writeFile(pathToFile + 'webpack.config2.js', objToString(this));
+  fs.writeFile(pathToFile + 'webpack.config2.js', 'module.exports = ' + objToString(this));
 }
 
 // could wrap in closure to avoid the history variable in the
@@ -185,7 +184,7 @@ function createWebpackConfig(pathToFile) {
   return newConfig;
 }
 
-const test = createWebpackConfig(__dirname);
-test.done('./');
+// const test = createWebpackConfig(__dirname);
+// test.done('./');
 
 module.exports = createWebpackConfig;
