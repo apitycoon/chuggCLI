@@ -23,23 +23,13 @@ function installPackages(arr) {
           'stdout': stdout,
           'stderr': stderr
         }
-        resolve(obj);
+        resolve([obj, arr]);
       })
     }))
   })
 
   //check to see everything is installed and what failed
-  Promise.all(packageResults).then(function(data) {
-    data.forEach((result, index) => {
-      if (result.err) {
-        console.log('Error Installing: ', arr[index]);
-        console.log('Error: ', result.stderr);
-      } else {
-        console.log('Installed: ', arr[index]);
-      }
-    })
-
-  })
+  return Promise.all(packageResults);
 
 }
 
