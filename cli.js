@@ -7,6 +7,7 @@ const path = require('path');
 const scrapeWebpack = require('./scrapers/scrapeWebpack');
 const searchWebpackLoaders = require('./searchWebpackLoaders');
 const scrapeGithub = require('./scrapers/scrapeGithub');
+const install = require('./handlers/installNpmPackages');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -21,8 +22,20 @@ let currentLoaderData;
 let installationArray = [];
 
 function closeReadline() {
-  console.log(`Loaded modules: ${installationArray}`)
-  rl.close();
+  console.log(`Loading modules: ${installationArray}`)
+  install(installationArray).then(function(data) {
+    
+    
+      data.forEach((result, index) => {
+        if (result[0].err) {
+          console.log('Error Installing: ', result[1][index]);
+          console.log('Error: ', result[0].stderr);
+        } else {
+          console.log('Installed: ', result[1][index]);
+        }
+      });
+      rl.close();
+  });
 }
 
 function inputEntry() {
@@ -231,14 +244,16 @@ function exclude() {
   rl.question(`Which file or folder would you like to exclude?
 `, answer => {
     configObj.exclude = answer;
+    
+    
     console.log(`${currentLoaderName} loaded. Returning to seach query.`);
     useLoaders();
   });
 }
 
-inputEntry();
+// inputEntry();
 
-// beginSearch();
+beginSearch();
 
 // scrapeWebpack('https://webpack.github.io/docs/list-of-loaders.html')
 // .then(data => {
