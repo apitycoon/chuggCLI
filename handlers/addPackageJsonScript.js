@@ -3,6 +3,7 @@ const path = require('path');
 
 function readPackage() {
   var data = fs.readFile(path.join(__dirname, '../package.json'), (err, data) => {
+    if (err) throw err;
     var package = JSON.parse(data)
     package.scripts['webpack-watch'] = 'webpack -w';
     var stringPackage = JSON.stringify(package, null, 4);

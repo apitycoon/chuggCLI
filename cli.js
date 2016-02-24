@@ -9,6 +9,7 @@ const searchWebpackLoaders = require('./searchWebpackLoaders');
 const scrapeGithub = require('./scrapers/scrapeGithub');
 const install = require('./handlers/installNpmPackages');
 const checkWP = require('./handlers/checkWebpackConfig');
+const addPackage = require('./handlers/addPackageJsonScript');
 const createWP = require('./createWebpackConfig');
 
 let webpackConfig = createWP(__dirname);
@@ -41,6 +42,7 @@ function closeReadline() {
       });
       
       webpackConfig.done('./');
+      addPackage();
       
       rl.close();
   });
