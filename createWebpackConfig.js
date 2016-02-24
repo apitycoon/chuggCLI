@@ -19,7 +19,7 @@ Loader.prototype.addQuery = function(value) {
   this.query = value;
 }
 Loader.prototype.addInclude = function(value) {
-  this.include = value ? value : './';
+  this.include = value ? value : '/node_modules/';
 }
 
 // object constructor for the output portion of the config file
@@ -69,10 +69,27 @@ Config.prototype.removeLoader = function() {
 
 // method to write the file to webpack.config.js file
 Config.prototype.done = function() {
-  // console.log(JSON.stringify(this.));
+  fs.writeFile('test.js', objToString(this));
+}
 
-  // fs.writeFile('test.js', `module.exports = JSON.parse(${JSON.stringify(this)})`);
-  // fs.writeFile('test.js', objectToString(this));
+function objToString(obj, ndeep) {
+  if(obj == null){ return String(obj); }
+  switch(typeof obj){
+    case "string":
+    // deal with regex inputs
+    if (obj[0] === '/' && obj[obj.length - 1] === '/') {
+      return obj;
+    }
+    return "'"+obj+"'";
+    case "function": return obj.name || obj.toString();
+    case "object":
+    var indent = Array(ndeep || 1).join('  '), isArray = Array.isArray(obj);
+    return '{['[+isArray] + Object.keys(obj).map(function(key){
+      var disp = isArray ? '' : `${key}: `;
+      return '\n  ' + indent + disp + objToString(obj[key], (ndeep || 1) + 1);
+    }).join(',') + '\n' + indent + '}]'[+isArray];
+    default: return obj.toString();
+  }
 }
 
 // returns a Config object that integrates information from
@@ -120,6 +137,6 @@ function createWebpackConfig(pathToFile) {
 }
 
 const test = createWebpackConfig(__dirname);
-// console.log(test.toSource());
+test.done();
 
 module.exports = createWebpackConfig;
