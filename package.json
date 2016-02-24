@@ -1,26 +1,31 @@
 {
-  "name": "chuggcli",
+  "name": "chuggCLI",
   "version": "1.0.0",
-  "description": "",
-  "main": "searchWebpackLoaders.js",
+  "main": "createWebpackConfig.js",
+  "directories": {
+    "test": "tests"
+  },
   "dependencies": {
-    "cheerio": "^0.20.0",
-    "request-promise": "^2.0.1"
+    "asdfasdfasdf": "0.0.2",
+    "jquery": "^2.2.1",
+    "lodash": "^4.5.1",
+    "moment": "^2.11.2",
+    "nodemon": "^1.9.0"
   },
-  "devDependencies": {
-    "tape": "^4.4.0"
-  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/samhagan/chuggCLI.git"
+    "url": "git+https://github.com/rpp114/chuggCLI.git"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/samhagan/chuggCLI/issues"
+    "url": "https://github.com/rpp114/chuggCLI/issues"
   },
-  "homepage": "https://github.com/samhagan/chuggCLI#readme"
+  "homepage": "https://github.com/rpp114/chuggCLI#readme",
+  "description": ""
 }
