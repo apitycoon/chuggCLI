@@ -72,12 +72,19 @@ Config.prototype.done = function() {
   fs.writeFile('test.js', objToString(this));
 }
 
+// could wrap in closure to avoid the history variable in the
+// main context
+const history = [];
+
 function objToString(obj, ndeep) {
   if(obj == null){ return String(obj); }
   switch(typeof obj){
     case "string":
     // deal with regex inputs
     if (obj[0] === '/' && obj[obj.length - 1] === '/') {
+      // allows for modification to only do change for
+      // properties that are predetermined to have regex
+      console.log(history.pop(), obj)
       return obj;
     }
     return "'"+obj+"'";
@@ -85,6 +92,7 @@ function objToString(obj, ndeep) {
     case "object":
     var indent = Array(ndeep || 1).join('  '), isArray = Array.isArray(obj);
     return '{['[+isArray] + Object.keys(obj).map(function(key){
+      history.push(key);
       var disp = isArray ? '' : `${key}: `;
       return '\n  ' + indent + disp + objToString(obj[key], (ndeep || 1) + 1);
     }).join(',') + '\n' + indent + '}]'[+isArray];
