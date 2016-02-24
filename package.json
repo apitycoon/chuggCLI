@@ -1,13 +1,16 @@
 {
   "name": "chuggcli",
   "version": "1.0.0",
-  "description": "",
   "main": "searchWebpackLoaders.js",
   "dependencies": {
+    "babel-loader": "^6.2.3",
     "bson": "^0.4.21",
     "cheerio": "^0.20.0",
     "commander": "^2.9.0",
-    "request-promise": "^2.0.1"
+    "cowsay-loader": "^1.0.1",
+    "css-loader": "^0.23.1",
+    "request-promise": "^2.0.1",
+    "sass-loader": "^3.1.2"
   },
   "devDependencies": {
     "tape": "^4.4.0"
@@ -27,5 +30,10 @@
   "bugs": {
     "url": "https://github.com/samhagan/chuggCLI/issues"
   },
-  "homepage": "https://github.com/samhagan/chuggCLI#readme"
+  "homepage": "https://github.com/samhagan/chuggCLI#readme",
+  "directories": {
+    "test": "tests"
+  },
+  "keywords": [],
+  "description": ""
 }
