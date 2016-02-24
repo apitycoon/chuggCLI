@@ -6,6 +6,10 @@ const Promise = require('bluebird');
 
 //takes arr of package names, installs them returns errors if any exists
 function installPackages(arr) {
+  if (!arr) return new Promise(function(resolve, reject) {
+    resolve();
+  });
+  
   var packageResults = [];
 
   const cmd = 'npm i --save ';

@@ -8,15 +8,20 @@ const scrapeWebpack = require('./scrapers/scrapeWebpack');
 const searchWebpackLoaders = require('./searchWebpackLoaders');
 const scrapeGithub = require('./scrapers/scrapeGithub');
 const install = require('./handlers/installNpmPackages');
+const checkWP = require('./handlers/checkWebpackConfig');
+const createWP = require('./createWebpackConfig');
+
+let webpackConfig = createWP(__dirname);
+
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
 
-let configObj = {};
 let results;
 let currentLoader;
+let currentLoaderUrl;
 let currentLoaderName;
 let currentLoaderData;
 let installationArray = [];
@@ -34,21 +39,24 @@ function closeReadline() {
           console.log('Installed: ', result[1][index]);
         }
       });
+      
+      webpackConfig.done('./');
+      
       rl.close();
   });
 }
 
 function inputEntry() {
-  rl.question(`Welcome to wpm. Please input your entry js file:
+  rl.question(`Please input your entry js file:
 `, answer => {
       if (answer.slice(-3) !== '.js') incorrectEntry(answer);
       else {
         if (answer[0] !== `.`) answer = `.${answer}`;
         if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
 
-      configObj.entry = answer;  
+      webpackConfig.addEntry(answer);  
       console.log(`You answered: ${answer}`);
-      inputOutput(answer);
+      inputOutput();
       }
   });
 }
@@ -61,9 +69,9 @@ function incorrectEntry(mistake) {
         if (answer[0] !== `.`) answer = `.${answer}`;
         if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
 
-      configObj.entry = answer;  
+      webpackConfig.addEntry(answer);
       console.log(`You answered: ${answer}`);
-      inputOutput(answer);
+      inputOutput();
       }
   });
 }
@@ -78,7 +86,7 @@ function inputOutput() {
           if (answer[0] !== `.`) answer = `.${answer}`;
           if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
           
-        configObj.output = answer;
+        webpackConfig.output.addFilename(answer);
         console.log(`You answered: ${answer}`);
         selectPreset();
       }
@@ -95,7 +103,7 @@ function incorrectOutput(mistake) {
           if (answer[0] !== `.`) answer = `.${answer}`;
           if (answer[1] !== `/`) answer = `./${answer.slice(1)}`;
         
-        configObj.output = answer;
+        webpackConfig.output.addFilename(answer);
         console.log(`You answered: ${answer}`);
         selectPreset();
       }
@@ -127,62 +135,83 @@ To add other loaders, please include [n]
 }
 
 function loadReactPreset() {
-  console.log(`React preset added.`);
+  var reactLoader = webpackConfig.createLoader();
+  
+  reactLoader.addLoader('babel');
+  reactLoader.addTest(/\.jsx?$/, true);
+  reactLoader.addQuery({ presets: ['react', 'es2015'] });
+  reactLoader.addExclude('node_modules|bower_components');
   installationArray = installationArray.concat(['babel-loader', 'babel-core', 'babel-preset-es2015', 'babel-preset-react']);
+  console.log(`React preset added.`);
   
 }
 
 function loadES2015Preset() {
-  console.log(`ES2015 preset added.`);
+  var es2015Loader = webpackConfig.createLoader();
+  
+  es2015Loader.addLoader('babel');
+  es2015Loader.addTest('.js');
+  es2015Loader.addQuery({ presets: ['es2015'] });
+  es2015Loader.addExclude('(node_modules|bower_components)');
+  
   installationArray = installationArray.concat(['babel-loader', 'babel-core', 'babel-preset-es2015']);
+  console.log(`ES2015 preset added.`);
 }
   
 function loadBoostrapPreset() {
+  
+  // { test: /\.css$/, loader: 'style-loader!css-loader' },
+  // { test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: "file" },
+  // { test: /\.(woff|woff2)$/, loader:"url?prefix=font/&limit=5000" },
+  // { test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=application/octet-stream" },
+  // { test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: "url?limit=10000&mimetype=image/svg+xml" }
+  
+  var cssLoader = webpackConfig.createLoader();
+  var eotLoader = webpackConfig.createLoader();
+  var woffLoader = webpackConfig.createLoader();
+  var ttfLoader = webpackConfig.createLoader();
+  var svgLoader = webpackConfig.createLoader();
+  
+  
+  cssLoader.addLoader('style-loader!css-loader');
+  cssLoader.addTest('.css');
+  
+  eotLoader.addLoader('file');
+  eotLoader.addTest(/\.eot(\?v=\d+\.\d+\.\d+)?$/, true);
+  
+  woffLoader.addLoader('url?prefix=font/&limit=5000');
+  woffLoader.addTest(/\.(woff|woff2)$/, true);
+  
+  ttfLoader.addLoader('url?limit=10000&mimetype=application/octet-stream');
+  ttfLoader.addTest(/\.ttf(\?v=\d+\.\d+\.\d+)?$/, true);
+  
+  svgLoader.addLoader('url?limit=10000&mimetype=image/svg+xml');
+  svgLoader.addTest(/\.svg(\?v=\d+\.\d+\.\d+)?$/, true);
+  
+  
+  installationArray = installationArray.concat(['file-loader', 'url-loader', 'style-loader', 'css-loader', 'bootstrap-webpack', 'expose-loader']);
   console.log(`Boostrap preset added.`)
-  installationArray = installationArray.concat(['file-loader', 'url-loader', 'bootstrap-webpack', 'expose-loader']);
 }
-  
-  
-  
-  
-  
-  
+
+// function invalidPreset(mistake) {
+//   rl.question(`${mistake} is an invalid preset. Please select either [r] React, [a] Angular or [n] none
+// `, answer => {
 //       if (answer !== 'r' && answer !== 'a' && answer !== 'n') {
 //         invalidPreset(answer);
 //       } else if (answer === 'r') {
-//         configObj.presets = answer;
+//         webpackConfig.presets = answer;
 //         console.log(`You answered: React`);
 //         closeReadline();
 //       } else if (answer === 'a') {
-//         configObj.presets = answer;
+//         webpackConfig.presets = answer;
 //         console.log(`You answered: Angular`);
 //         closeReadline();
 //       } else {
-//         configObj.presets = answer;
+//         webpackConfig.presets = answer;
 //         useLoaders();
 //       }
 //   });
 // }
-
-function invalidPreset(mistake) {
-  rl.question(`${mistake} is an invalid preset. Please select either [r] React, [a] Angular or [n] none
-`, answer => {
-      if (answer !== 'r' && answer !== 'a' && answer !== 'n') {
-        invalidPreset(answer);
-      } else if (answer === 'r') {
-        configObj.presets = answer;
-        console.log(`You answered: React`);
-        closeReadline();
-      } else if (answer === 'a') {
-        configObj.presets = answer;
-        console.log(`You answered: Angular`);
-        closeReadline();
-      } else {
-        configObj.presets = answer;
-        useLoaders();
-      }
-  });
-}
 
 function useLoaders() {
   rl.question(`Will you need to load any non-js files? y/n
@@ -192,7 +221,6 @@ function useLoaders() {
       } else if (answer === 'n') {
         closeReadline();
       } else {
-        configObj.needLoader = answer;
         console.log(`You answered: ${answer}`);
         beginSearch();
       }
@@ -208,8 +236,6 @@ function beginSearch() {
       showSearchResults();
     });
   
-  
-      configObj.search = answer;
       console.log(`You answered: ${answer}`);
   });
   
@@ -221,9 +247,9 @@ function showSearchResults() {
   rl.question(`Please select the option you would like to install:
 `, answer => {
     var resultsIndexes = Object.keys(results);
-    currentLoader = results[resultsIndexes[answer]];
-    currentLoaderName = currentLoader.url.slice(currentLoader.url.lastIndexOf('/') + 1);
-    scrapeGithub(currentLoader.url).then(data => {
+    currentLoaderUrl = results[resultsIndexes[answer]].url;
+    currentLoaderName = currentLoaderUrl.slice(currentLoaderUrl.lastIndexOf('/') + 1);
+    scrapeGithub(currentLoaderUrl).then(data => {
       currentLoaderData = data;
       console.log(data.readme);
       askToInstall();
@@ -234,9 +260,11 @@ function showSearchResults() {
 function askToInstall() {
   rl.question(`Would you like to install ${currentLoaderName}? y/n
 `, answer => {
-      if (answer === 'y') {
-          installationArray.push(currentLoaderName);
-          inputTest();
+      if (answer === 'y') { 
+        installationArray.push(currentLoaderName);
+        currentLoader = webpackConfig.createLoader();
+        currentLoader.addLoader(currentLoaderName);
+        inputTest();
       } else if (answer === 'n') {
         showSearchResults();
       } else {
@@ -250,9 +278,9 @@ function inputTest() {
   rl.question(`What file extension would you like to associate with this loader?
 `, answer => {
       if (answer[0] === `.`) {
-        configObj.test = answer;
+        currentLoader.addTest(`${answer}`);
       } else {
-        configObj.test = `.${answer}`;
+        currentLoader.addTest(`.${answer}`);
       }
     console.log(`You answered: ${answer}`);      
     includeOrExclude();
@@ -278,7 +306,7 @@ function includeOrExclude() {
 function include() {
   rl.question(`Which file or folder would you like to include?
 `, answer => {
-    configObj.include = answer;
+    currentLoader.addInclude(answer);
     console.log(`${currentLoaderName} loaded. Returning to seach query.`);
     useLoaders();
   });
@@ -287,7 +315,7 @@ function include() {
 function exclude() {
   rl.question(`Which file or folder would you like to exclude?
 `, answer => {
-    configObj.exclude = answer;
+    currentLoader.addExclude(answer);
     
     
     console.log(`${currentLoaderName} loaded. Returning to seach query.`);
@@ -295,10 +323,24 @@ function exclude() {
   });
 }
 
+
+checkWP().then(data => {
+  if (data) console.log(`Welcome to wpm. Please wait patiently as we check your pre-existing webpack files...`);
+  install(data).then(installData => {
+      if (installData) {
+        installData.forEach((result, index) => {
+            if (result[0].err) {
+              console.log('Error Installing: ', result[1][index]);
+              console.log('Error: ', result[0].stderr);
+            } else {
+              console.log('Installed: ', result[1][index]);
+            }
+          });
+      }
+    inputEntry();
+  });
+});
+
 // inputEntry();
 
-beginSearch();
-
-
-
-
+// beginSearch();
