@@ -8,6 +8,7 @@ const scrapeWebpack = require('./scrapers/scrapeWebpack');
 const searchWebpackLoaders = require('./searchWebpackLoaders');
 const scrapeGithub = require('./scrapers/scrapeGithub');
 const install = require('./handlers/installNpmPackages');
+const checkWP = require('./handlers/checkWebpackConfig');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -39,7 +40,7 @@ function closeReadline() {
 }
 
 function inputEntry() {
-  rl.question(`Welcome to wpm. Please input your entry js file:
+  rl.question(`Please input your entry js file:
 `, answer => {
       if (answer.slice(-3) !== '.js') incorrectEntry(answer);
       else {
@@ -295,10 +296,22 @@ function exclude() {
   });
 }
 
+
+checkWP().then(data => {
+  if (data) console.log(`Welcome to wpm. Please wait patiently as we check your pre-existing webpack files...`);
+  install(data).then(installData => {
+    installData.forEach((result, index) => {
+        if (result[0].err) {
+          console.log('Error Installing: ', result[1][index]);
+          console.log('Error: ', result[0].stderr);
+        } else {
+          console.log('Installed: ', result[1][index]);
+        }
+      });
+    inputEntry();
+  });
+});
+
 // inputEntry();
 
-beginSearch();
-
-
-
-
+// beginSearch();
