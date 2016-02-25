@@ -1,22 +1,47 @@
-const path = require('path');
-
 module.exports = {
-  entry: './client/main.js',
+  entry: './entry.js',
   output: {
-    path: path.join(__dirname, 'build'),
-    filename: 'bundle.js'
+    filename: './output.js'
   },
-  devtool: 'source-map',
   module: {
     loaders: [
       {
-        test: /.jsx?$/,
-        loaders: ['babel-loader', 'css'],
-        exclude: /node_modules/,
+        loader: 'babel',
+        test: /\.jsx?$/,
         query: {
-          presets: ['es2015', 'react']
-        }
+          presets: [
+            'react',
+            'es2015'
+          ]
+        },
+        exclude: /node_modules|bower_components/
+      },
+      {
+        loader: 'style-loader!css-loader',
+        test: /\.css/
+      },
+      {
+        loader: 'file',
+        test: /\.eot(\?v=\d+\.\d+\.\d+)?$/
+      },
+      {
+        loader: 'url?prefix=font/&limit=5000',
+        test: /\.(woff|woff2)$/
+      },
+      {
+        loader: 'url?limit=10000&mimetype=application/octet-stream',
+        test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/
+      },
+      {
+        loader: 'url?limit=10000&mimetype=image/svg+xml',
+        test: /\.svg(\?v=\d+\.\d+\.\d+)?$/
+      },
+      {
+        loader: 'css-loader',
+        test: /\.css/
       }
     ]
-  }
-};
+  },
+  plugins: [
+  ]
+}

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const stringify = require('stringify-object');
 
 // object constructor for loaders
 // loaders need at least two props -- (i) loader and (ii) file extension to test
@@ -25,6 +26,8 @@ Loader.prototype.addLoader = function(value) {
     }
   }
 }
+
+// merge flag allow you to bypass any tests/conversions
 Loader.prototype.addTest = function(value, merge) {
   if (merge && value) {
     this.test = value.toString();
@@ -109,11 +112,11 @@ Config.prototype.addPlugin = function(value) {
 
 // method to write the file to webpack.config.js file
 Config.prototype.done = function(pathToFile) {
+  // fs.writeFile('./webpack.config2.js', stringify(this));
   fs.writeFile(pathToFile + 'webpack.config.js', 'module.exports = ' + objToString(this));
 }
 
-// could wrap in closure to avoid the history variable in the
-// main context
+// could wrap in closure to avoid the history variable in the main context
 const history = [];
 const regexCheck = {
   'include': true,
@@ -125,10 +128,8 @@ function objToString(obj, ndeep) {
   if(obj == null){ return String(obj); }
   switch(typeof obj){
     case "string":
-    // deal with regex inputs
+    // allows for modification to only properties that are predetermined to have regex
     if (obj[0] === '/' && obj[obj.length - 1] === '/' && regexCheck[history[history.length - 1]]) {
-      // allows for modification to only do change for
-      // properties that are predetermined to have regex
       history.pop();
       return obj;
     }
@@ -147,8 +148,10 @@ function objToString(obj, ndeep) {
 
 // returns a Config object that integrates information from
 // an existing webpack.config.js file
-function createWebpackConfig(pathToFile) {
-  // check for an existing webpack filename
+function createWebpackConfig(pathToFile, merge) {
+  if (merge === undefined) merge = true;
+
+  // check for an existing webpack file
   var existingConfig;
   var existingRequires = [];
   try {
@@ -162,8 +165,8 @@ function createWebpackConfig(pathToFile) {
   }
 
   const newConfig = new Config();
-  if (!existingConfig) {
-    // when there is no existing config file return a new config object
+  if (!existingConfig || !merge) {
+    // when there is no existing config file just return a new config object
     return newConfig;
   }
 
@@ -185,14 +188,12 @@ function createWebpackConfig(pathToFile) {
         newLoader.addExclude(loader.exclude, true);
       });
     } else {
+      // merge any other properties
       newConfig[prop] = existingConfig[prop];
     }
   }
 
   return newConfig;
 }
-
-// const test = createWebpackConfig(__dirname);
-// test.done('./');
 
 module.exports = createWebpackConfig;
