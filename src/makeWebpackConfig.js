@@ -1,6 +1,4 @@
 import { compose, either, identity, map, reduce, pick } from 'ramda';
-import { writeFileSync } from 'fs';
-import stringify from 'stringify-object';
 
 // addEntry :: Object -> Object
 // extends the input object with an entry property
@@ -15,13 +13,13 @@ export const addEntry = (x) => ({
 export const addOutputFilename = (x) => ({
   ...x,
   output: {
-    filename: x.filename
+    filename: x.output.filename
   }
 });
 
 // addOutputPath :: Object -> Boolean | Object
 // if a path was supplied it will be added to the output object
-export const addOutputPath = (x) => (!!x.path && {
+export const addOutputPath = (x) => (!!x.output.path && {
   ...x,
   output: {
     ...x.output,
@@ -31,7 +29,7 @@ export const addOutputPath = (x) => (!!x.path && {
 
 // addOutputPublicPath :: Object -> Boolean | Object
 // if a public path was supplied, add to output Object
-export const addOutputPublicPath = (x) => (!!x.publicpath && {
+export const addOutputPublicPath = (x) => (!!x.output.publicpath && {
   ...x,
   output: {
     ...x.output,
@@ -39,12 +37,19 @@ export const addOutputPublicPath = (x) => (!!x.publicpath && {
   }
 });
 
+// addPlugins :: Object -> Boolean | Object
+// if there is a plugins array then include it
+export const addPlugins = (x) => (!!x.plugins && {
+  ...x,
+  plugins: x.plugins
+})
+
 // addLoadersArr :: Object -> Object
 // loaders are provided as an array of objects
 export const addLoadersArr = (x) => ({
   ...x,
   module: {
-    loaders: map(mapLoader, x.loaders)
+    loaders: map(mapLoader, x.module.loaders)
   }
 })
 
@@ -97,6 +102,10 @@ export const addLoaderExclude = (x) => (!!x.query && {
 // with a loader grab only the needed properties
 const finalLoader = pick(['loader', 'test', 'query', 'include', 'exclude']);
 
+// only grab the specific props needed for the objects
+const finalConfig = pick(['entry', 'output', 'module', 'plugins']);
+
+// compose the loader array functions
 export const mapLoader = compose(
   finalLoader,
   either(addLoaderExclude, identity),
@@ -104,4 +113,14 @@ export const mapLoader = compose(
   either(addLoaderQuery, identity),
   either(addLoaderLoaders, identity),
   either(addLoaderLoader, identity)
+)
+
+export const finalCompose = compose(
+  finalConfig,
+  either(addPlugins, identity),
+  addLoadersArr,
+  either(addOutputPublicPath, identity),
+  either(addOutputPath, identity),
+  addOutputFilename,
+  addEntry
 )
