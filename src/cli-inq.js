@@ -233,7 +233,7 @@ function giveTest() {
   }, function(answers) {
       if (answers.test[0] !== `.`) answers.test = `.${answers.test}`;
 
-    loaderObj.test = new RegExp(`\${answers.test}`);
+    loaderObj.test = new RegExp(`${answers.test}`);
     includeOrExclude();
   });
 }
@@ -311,8 +311,6 @@ function loadLoader() {
 }
 
 function endCLI() {
-  console.log(webpackObj);
-  console.log(npmInstallArray);
 
   var installedNPM = install(npmInstallArray)
   installedNPM.forEach((result, index) => {
@@ -321,13 +319,13 @@ function endCLI() {
   createWP('../webpack.config.js', webpackObj);
 };
 
-// inputFileNames();
+inputFileNames();
 
-checkWP().then(data => {
-  if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
-  var installed = install(data);
-  installed.forEach((result, index) => {
-    console.log(chalk.bgGreen('Installed:'), result);
-  });
-  inputFileNames();
-});
+// checkWP().then(data => {
+//   if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
+//   var installed = install(data);
+//   installed.forEach((result, index) => {
+//     console.log(chalk.bgGreen('Installed:'), result);
+//   });
+//   inputFileNames();
+// });
