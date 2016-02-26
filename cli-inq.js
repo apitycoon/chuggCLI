@@ -4,12 +4,12 @@ const inquirer = require('inquirer');
 const chalk = require('chalk');
 
 const scrapeWebpack = require('./scrapers/scrapeWebpack');
-const searchWebpackLoaders = require('./searchWebpackLoaders');
+const searchWebpackLoaders = require('./lib/searchWebpackLoaders');
 const scrapeGithub = require('./scrapers/scrapeGithub');
-const install = require('./handlers/installNpmPackages');
+const install = require('./lib/installNpmPackages');
 const checkWP = require('./handlers/checkWebpackConfig');
 const addPackage = require('./handlers/addPackageJsonScript');
-const createWP = require('./createWebpackConfig');
+const writeWP = require('./lib/printWebpackConfig');
 
 // let webpackConfig = createWP(__dirname);
 
@@ -233,7 +233,7 @@ function giveTest() {
   }, function(answers) {
       if (answers.test[0] !== `.`) answers.test = `.${answers.test}`;
     
-    loaderObj.test = new RegExp(`\${answers.test}`);
+    loaderObj.test = new RegExp(`\.${answers.test}`);
     includeOrExclude();
   });
 }
@@ -311,40 +311,21 @@ function loadLoader() {
 }
 
 function endCLI() {
-  console.log(webpackObj);
-  console.log(npmInstallArray);
   
-  install(npmInstallArray).then(installData => {
-      if (installData) {
-        installData.forEach((result, index) => {
-            if (result[0].err) {
-              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
-              console.log(chalk.bgRed('Error:'), result[0].stderr);
-            } else {
-              console.log(chalk.bgGreen('Installed:'), result[1][index]);
-            }
+   install(npmInstallArray).forEach((result, index) => {
+              console.log(chalk.bgGreen('Installed:'), result);
           });
-      }
-  });
+  
+  writeWP('./', webpackObj);
 }
 
-// inputFileNames();
+inputFileNames();
 
 
-checkWP().then(data => {
-  if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
-  install(data).then(installData => {
-      if (installData) {
-        installData.forEach((result, index) => {
-            if (result[0].err) {
-              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
-              console.log(chalk.bgRed('Error:'), result[0].stderr);
-            } else {
-              console.log(chalk.bgGreen('Installed:'), result[1][index]);
-            }
-          });
-      }
-      
-    inputFileNames();
-  });
-});
+// checkWP().then(data => {
+//   if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
+//   install(data).forEach((result, index) => {
+//               console.log(chalk.bgGreen('Installed:'), result);
+//           });
+//     inputFileNames();
+//       });
