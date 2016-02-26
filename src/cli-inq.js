@@ -25,7 +25,7 @@ let loaderObj = {
 
 let webpackObj = {
   entry: '',
-  output: '',
+  output: {},
   module: {
     loaders: []
   }
@@ -64,8 +64,8 @@ function inputFileNames() {
       }
     }
   ], function(answers) {
-    webpackObj.entry = answers.entry;
-    webpackObj.output = answers.output;
+    webpackObj.entry = `./${answers.entry}`;
+    webpackObj.output.filename = `./${answers.output}`;
 
     selectPresets();
   });
