@@ -3,13 +3,13 @@
 const inquirer = require('inquirer');
 const chalk = require('chalk');
 
-const scrapeWebpack = require('./scrapers/scrapeWebpack');
+const scrapeWebpack = require('./scrapeWebpack');
 const searchWebpackLoaders = require('./searchWebpackLoaders');
-const scrapeGithub = require('./scrapers/scrapeGithub');
-const install = require('./handlers/installNpmPackages');
-const checkWP = require('./handlers/checkWebpackConfig');
-const addPackage = require('./handlers/addPackageJsonScript');
-const createWP = require('./createWebpackConfig');
+const scrapeGithub = require('./scrapeGithub');
+const install = require('./installNpmPackages');
+const checkWP = require('./checkWebpackConfig');
+const addPackage = require('./addPackageJsonScript');
+import createWP from './printWebpackConfig.js';
 
 // let webpackConfig = createWP(__dirname);
 
@@ -40,14 +40,14 @@ function inputFileNames() {
       default: function() { return `index.js`; },
       validate: function(value) {
         var pass = value.match(/\.jsx?$/);
-        
+
           if (pass) {
             return true;
           } else {
             return `Please enter a valid file ending in .js`;
           }
       }
-    }, 
+    },
     {
       type: `input`,
       name: `output`,
@@ -55,18 +55,18 @@ function inputFileNames() {
       default: function() { return `bundle.js`; },
       validate: function(value) {
         var pass = value.match(/\.jsx?$/);
-        
+
           if (pass) {
             return true;
           } else {
             return `Please enter a valid file ending in .js`;
           }
-      } 
+      }
     }
   ], function(answers) {
     webpackObj.entry = answers.entry;
     webpackObj.output = answers.output;
-    
+
     selectPresets();
   });
 }
@@ -92,10 +92,10 @@ function selectPresets() {
           name: `Please, No Presets`
         }
       ]
-      
+
     }
     ], function(answers) {
-      
+
         if (answers.loaders.indexOf(`React JSX w/ ES2015`) > -1) {
           webpackObj.module.loaders.push(
             {
@@ -107,7 +107,7 @@ function selectPresets() {
               }
             }
           );
-          
+
           npmInstallArray = npmInstallArray.concat([`babel-loader`, `babel-core`, `babel-preset-es2015`, `babel-preset-react`]);
         } else if (answers.loaders.indexOf(`ES2015`) > -1) {
           webpackObj.module.loaders.push(
@@ -120,10 +120,10 @@ function selectPresets() {
               }
             }
           );
-          
+
           npmInstallArray = npmInstallArray.concat([`babel-loader`, `babel-core`, `babel-preset-es2015`]);
         }
-        
+
         if (answers.loaders.indexOf(`Bootstrap`) > - 1) {
           webpackObj.module.loaders = webpackObj.module.loaders.concat([
             {test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff'},
@@ -132,10 +132,10 @@ function selectPresets() {
             {test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml'},
             { test: /\.css$/, loader: 'style-loader!css-loader' }
           ]);
-          
+
           npmInstallArray = npmInstallArray.concat([`url-loader`, `file-loader`, `style-loader`, `css-loader`])
         }
-      
+
       useCustomLoaders();
     }
   );
@@ -153,7 +153,7 @@ function useCustomLoaders() {
           test: '',
           loader: ''
         };
-        
+
         promptSearch();
       } else {
         endCLI();
@@ -177,7 +177,7 @@ function promptSearch() {
     scrapeWebpack('https://webpack.github.io/docs/list-of-loaders.html')
     .then(function(data) {
       searchResults = searchWebpackLoaders(answers.searchQuery, data);
-      
+
       showSearchResults();
     });
   })
@@ -197,17 +197,17 @@ function showSearchResults() {
     readmeUrl = searchResults.filter(function(obj) {
       return obj.desc === answers.loaderChoice;
     }).map(function(obj) { return obj.url })[0];
-    
+
     showReadme();
   });
 }
 
 function showReadme() {
   loaderName = readmeUrl.slice(readmeUrl.lastIndexOf('/') + 1);
-  
+
   scrapeGithub(readmeUrl).then(function(data) {
     console.log(data.readme)
-    
+
     inquirer.prompt({
       type: `confirm`,
       name: `install`,
@@ -216,7 +216,7 @@ function showReadme() {
     }, function(answers) {
         if (answers.install) {
           loaderObj.loader = loaderName;
-          
+
           giveTest();
         } else {
           showSearchResults();
@@ -232,7 +232,7 @@ function giveTest() {
     message: `What file extension will this loader be bundling?`
   }, function(answers) {
       if (answers.test[0] !== `.`) answers.test = `.${answers.test}`;
-    
+
     loaderObj.test = new RegExp(`\${answers.test}`);
     includeOrExclude();
   });
@@ -272,7 +272,7 @@ function include() {
     message: `Which file or folder would you like to include for this loader?`,
     validate: function(value) {
       if (value) return true;
-      
+
       return `Please enter a valid file or folder.`
     }
   }, function(answers) {
@@ -280,7 +280,7 @@ function include() {
     loadLoader();
   });
 }
-  
+
 function exclude() {
   inquirer.prompt({
     type: `input`,
@@ -288,7 +288,7 @@ function exclude() {
     message: `Which file or folder would you like to exclude from this loader?`,
     validate: function(value) {
       if (value) return true;
-      
+
       return `Please enter a valid file or folder.`
     }
   }, function(answers) {
@@ -298,7 +298,7 @@ function exclude() {
 }
 
 function loadLoader() {
-  
+
     if (npmInstallArray.indexOf(loaderName) < 0) {
       webpackObj.module.loaders.push(loaderObj);
       npmInstallArray.push(loaderName);
@@ -306,45 +306,28 @@ function loadLoader() {
     } else {
       console.log(chalk.bgRed(loaderName), `detected as a duplicate and not loaded.`);
     }
-    
+
   useCustomLoaders();
 }
 
 function endCLI() {
   console.log(webpackObj);
   console.log(npmInstallArray);
-  
-  install(npmInstallArray).then(installData => {
-      if (installData) {
-        installData.forEach((result, index) => {
-            if (result[0].err) {
-              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
-              console.log(chalk.bgRed('Error:'), result[0].stderr);
-            } else {
-              console.log(chalk.bgGreen('Installed:'), result[1][index]);
-            }
-          });
-      }
+
+  var installedNPM = install(npmInstallArray)
+  installedNPM.forEach((result, index) => {
+    console.log(chalk.bgGreen('Installed:'), result);
   });
-}
+  createWP('../webpack.config.js', webpackObj);
+};
 
 // inputFileNames();
 
-
 checkWP().then(data => {
   if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
-  install(data).then(installData => {
-      if (installData) {
-        installData.forEach((result, index) => {
-            if (result[0].err) {
-              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
-              console.log(chalk.bgRed('Error:'), result[0].stderr);
-            } else {
-              console.log(chalk.bgGreen('Installed:'), result[1][index]);
-            }
-          });
-      }
-      
-    inputFileNames();
+  var installed = install(data);
+  installed.forEach((result, index) => {
+    console.log(chalk.bgGreen('Installed:'), result);
   });
+  inputFileNames();
 });
