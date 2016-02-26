@@ -16,7 +16,7 @@ function findWPFile() {
         packages.unshift('webpack');
         resolve(packages);
       } else {
-        resolve();
+        resolve([]);
       }
     })
   })

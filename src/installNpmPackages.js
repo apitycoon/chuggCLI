@@ -11,4 +11,4 @@ function installPackages(arr) {
 
 }
 
-module.exports = installPackages
+module.exports = installPackages;
