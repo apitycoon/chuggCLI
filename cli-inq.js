@@ -313,24 +313,38 @@ function loadLoader() {
 function endCLI() {
   console.log(webpackObj);
   console.log(npmInstallArray);
+  
+  install(npmInstallArray).then(installData => {
+      if (installData) {
+        installData.forEach((result, index) => {
+            if (result[0].err) {
+              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
+              console.log(chalk.bgRed('Error:'), result[0].stderr);
+            } else {
+              console.log(chalk.bgGreen('Installed:'), result[1][index]);
+            }
+          });
+      }
+  });
 }
 
-inputFileNames();
+// inputFileNames();
 
 
-// checkWP().then(data => {
-//   if (data) console.log(`Welcome to wpm. Please wait patiently as we check your pre-existing webpack files...`);
-//   install(data).then(installData => {
-//       if (installData) {
-//         installData.forEach((result, index) => {
-//             if (result[0].err) {
-//               console.log('Error Installing: ', result[1][index]);
-//               console.log('Error: ', result[0].stderr);
-//             } else {
-//               console.log('Installed: ', result[1][index]);
-//             }
-//           });
-//       }
-//     inputEntry();
-//   });
-// });
+checkWP().then(data => {
+  if (data) console.log(`Welcome to chuggCLI, inspired by ${chalk.bgBlue(`Adam`)}. Please wait patiently as we check your pre-existing webpack files...`);
+  install(data).then(installData => {
+      if (installData) {
+        installData.forEach((result, index) => {
+            if (result[0].err) {
+              console.log(chalk.bgRed('Error Installing:'), result[1][index]);
+              console.log(chalk.bgRed('Error:'), result[0].stderr);
+            } else {
+              console.log(chalk.bgGreen('Installed:'), result[1][index]);
+            }
+          });
+      }
+      
+    inputFileNames();
+  });
+});
